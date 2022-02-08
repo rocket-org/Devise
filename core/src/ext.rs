@@ -49,7 +49,7 @@ macro_rules! quote_respanned {
     })
 }
 
-pub use quote_respanned;
+pub use crate::quote_respanned;
 
 impl<T: quote::ToTokens> AstItemExt for T {
     fn respanned(&self, span: Span) -> T

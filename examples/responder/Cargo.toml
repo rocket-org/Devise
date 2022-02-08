@@ -1,6 +1,7 @@
 [package]
 name = "responder"
 version = "0.3.1"
+rust-version = "1.56.0"
 authors = ["Sergio Benitez <sb@sergio.bz>"]
 publish = false
 

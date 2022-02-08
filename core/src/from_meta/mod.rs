@@ -5,7 +5,7 @@ use syn::{self, Lit::*, spanned::Spanned};
 use proc_macro2_diagnostics::SpanDiagnosticExt;
 use proc_macro2::{Span, TokenStream};
 
-use generator::Result;
+use crate::generator::Result;
 
 pub use self::meta_item::MetaItem;
 
