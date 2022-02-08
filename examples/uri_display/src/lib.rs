@@ -61,7 +61,7 @@ pub fn derive_uri_display(input: TokenStream) -> TokenStream {
                     }
                 })
                 .field_map(|_, field| {
-                    let span = field.span().into();
+                    let span = field.span();
                     let accessor = field.accessor();
                     if let Some(ref ident) = field.ident {
                         let name = ident.to_string();

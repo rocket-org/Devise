@@ -146,12 +146,17 @@ pub trait Split3<A, B, C>: Sized + Iterator {
     fn split3(self) -> (Vec<A>, Vec<B>, Vec<C>);
 }
 
+
+type Split4Vectors<A, B, C, D> = (Vec<A>, Vec<B>, Vec<C>, Vec<D>);
+
 pub trait Split4<A, B, C, D>: Sized + Iterator {
-    fn split4(self) -> (Vec<A>, Vec<B>, Vec<C>, Vec<D>);
+    fn split4(self) -> Split4Vectors<A, B, C, D>;
 }
 
+type Split6Vectors<A, B, C, D, E, F> = (Vec<A>, Vec<B>, Vec<C>, Vec<D>, Vec<E>, Vec<F>);
+
 pub trait Split6<A, B, C, D, E, F>: Sized + Iterator {
-    fn split6(self) -> (Vec<A>, Vec<B>, Vec<C>, Vec<D>, Vec<E>, Vec<F>);
+    fn split6(self) -> Split6Vectors<A, B, C, D, E, F>;
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -240,7 +245,7 @@ impl<A, B, C, D, I: IntoIterator<Item = (A, B, C, D)> + Iterator> Split4<A, B, C
 impl<A, B, C, D, E, F, I: IntoIterator<Item = (A, B, C, D, E, F)> + Iterator>
     Split6<A, B, C, D, E, F> for I
 {
-    fn split6(self) -> (Vec<A>, Vec<B>, Vec<C>, Vec<D>, Vec<E>, Vec<F>) {
+    fn split6(self) -> Split6Vectors<A, B, C, D, E, F> {
         let (mut v1, mut v2, mut v3, mut v4, mut v5, mut v6) =
             (vec![], vec![], vec![], vec![], vec![], vec![]);
 
@@ -316,10 +321,10 @@ impl GenericExt for GenericParam {
 
 impl GenericParamExt for GenericParam {
     fn ident(&self) -> &Ident {
-        match self {
-            &GenericParam::Type(ref ty) => &ty.ident,
-            &GenericParam::Lifetime(ref l) => &l.lifetime.ident,
-            &GenericParam::Const(ref c) => &c.ident,
+        match *self {
+            GenericParam::Type(ref ty) => &ty.ident,
+            GenericParam::Lifetime(ref l) => &l.lifetime.ident,
+            GenericParam::Const(ref c) => &c.ident,
         }
     }
 }
