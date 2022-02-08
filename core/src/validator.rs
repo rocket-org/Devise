@@ -1,4 +1,4 @@
-use crate::{Result, Field, Fields, Variant, Struct, Enum, Input};
+use crate::{Enum, Field, Fields, Input, Result, Struct, Variant};
 
 type FnOutput = ();
 
@@ -45,10 +45,22 @@ impl ValidatorBuild {
 
 impl Validator for ValidatorBuild {
     builder_def_fwd!(validate_input: Input<'_>, input_validator, input_default);
-    builder_def_fwd!(validate_struct: Struct<'_>, struct_validator, struct_default);
+    builder_def_fwd!(
+        validate_struct: Struct<'_>,
+        struct_validator,
+        struct_default
+    );
     builder_def_fwd!(validate_enum: Enum<'_>, enum_validator, enum_default);
-    builder_def_fwd!(validate_variant: Variant<'_>, variant_validator, variant_default);
-    builder_def_fwd!(validate_fields: Fields<'_>, fields_validator, fields_default);
+    builder_def_fwd!(
+        validate_variant: Variant<'_>,
+        variant_validator,
+        variant_default
+    );
+    builder_def_fwd!(
+        validate_fields: Fields<'_>,
+        fields_validator,
+        fields_default
+    );
     builder_def_fwd!(validate_field: Field<'_>, field_validator, field_default);
 }
 
@@ -56,7 +68,7 @@ pub fn input_default<V: Validator>(mut validator: V, value: Input<'_>) -> Result
     match value {
         Input::Struct(v) => validator.validate_struct(v),
         Input::Enum(v) => validator.validate_enum(v),
-        Input::Union(_) => unimplemented!("union validation is unimplemented")
+        Input::Union(_) => unimplemented!("union validation is unimplemented"),
     }
 }
 

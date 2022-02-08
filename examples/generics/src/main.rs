@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
-#[macro_use] extern crate generics;
+#[macro_use]
+extern crate generics;
 
 trait Example0<T> {
     fn example(self) -> T;
@@ -43,4 +44,4 @@ struct GenFooZ<'z, 'b>(&'z str, &'b str);
 #[derive(GenExample)]
 struct GenFooAB<'x, 'y: 'x>(&'x str, &'y str);
 
-pub fn main() { }
+pub fn main() {}

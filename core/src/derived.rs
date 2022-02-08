@@ -1,10 +1,10 @@
 use std::ops::Deref;
 
-use syn::{self, DeriveInput};
 use quote::ToTokens;
+use syn::{self, DeriveInput};
 
-use proc_macro2::TokenStream;
 use field::{Field, Fields, FieldsKind};
+use proc_macro2::TokenStream;
 
 #[derive(Debug, Clone)]
 pub enum ItemInput {
@@ -16,38 +16,32 @@ pub enum ItemInput {
 impl From<DeriveInput> for ItemInput {
     fn from(input: DeriveInput) -> Self {
         match input.data {
-            syn::Data::Struct(v) => {
-                ItemInput::Struct(syn::ItemStruct {
-                    attrs: input.attrs,
-                    vis: input.vis,
-                    struct_token: v.struct_token,
-                    ident: input.ident,
-                    generics: input.generics,
-                    fields: v.fields,
-                    semi_token: v.semi_token,
-                })
-            }
-            syn::Data::Enum(v) => {
-                ItemInput::Enum(syn::ItemEnum {
-                    attrs: input.attrs,
-                    vis: input.vis,
-                    enum_token: v.enum_token,
-                    ident: input.ident,
-                    generics: input.generics,
-                    brace_token: v.brace_token,
-                    variants: v.variants,
-                })
-            }
-            syn::Data::Union(v) => {
-                ItemInput::Union(syn::ItemUnion {
-                    attrs: input.attrs,
-                    vis: input.vis,
-                    ident: input.ident,
-                    generics: input.generics,
-                    union_token: v.union_token,
-                    fields: v.fields,
-                })
-            }
+            syn::Data::Struct(v) => ItemInput::Struct(syn::ItemStruct {
+                attrs: input.attrs,
+                vis: input.vis,
+                struct_token: v.struct_token,
+                ident: input.ident,
+                generics: input.generics,
+                fields: v.fields,
+                semi_token: v.semi_token,
+            }),
+            syn::Data::Enum(v) => ItemInput::Enum(syn::ItemEnum {
+                attrs: input.attrs,
+                vis: input.vis,
+                enum_token: v.enum_token,
+                ident: input.ident,
+                generics: input.generics,
+                brace_token: v.brace_token,
+                variants: v.variants,
+            }),
+            syn::Data::Union(v) => ItemInput::Union(syn::ItemUnion {
+                attrs: input.attrs,
+                vis: input.vis,
+                ident: input.ident,
+                generics: input.generics,
+                union_token: v.union_token,
+                fields: v.fields,
+            }),
         }
     }
 }
@@ -89,15 +83,15 @@ impl ToTokens for ItemInput {
 pub enum Input<'v> {
     Struct(Struct<'v>),
     Enum(Enum<'v>),
-    Union(Union<'v>)
+    Union(Union<'v>),
 }
 
 impl<'v> From<&'v ItemInput> for Input<'v> {
     fn from(input: &'v ItemInput) -> Self {
         match input {
-            ItemInput::Struct(v) => Input::Struct(Derived::from(&v, input)),
-            ItemInput::Enum(v) => Input::Enum(Derived::from(&v, input)),
-            ItemInput::Union(v) => Input::Union(Derived::from(&v, input)),
+            ItemInput::Struct(v) => Input::Struct(Derived::from(v, input)),
+            ItemInput::Enum(v) => Input::Enum(Derived::from(v, input)),
+            ItemInput::Union(v) => Input::Union(Derived::from(v, input)),
         }
     }
 }
@@ -140,7 +134,10 @@ pub type Union<'v> = Derived<'v, syn::ItemUnion>;
 
 impl<'p, T, P> Derived<'p, T, P> {
     pub fn from(value: &'p T, parent: P) -> Self {
-        Derived { parent, inner: value }
+        Derived {
+            parent,
+            inner: value,
+        }
     }
 }
 
@@ -158,11 +155,14 @@ impl<'p, T: ToTokens, P> ToTokens for Derived<'p, T, P> {
     }
 }
 
-impl<'p, T, P: Copy> Copy for Derived<'p, T, P> { }
+impl<'p, T, P: Copy> Copy for Derived<'p, T, P> {}
 
 impl<'p, T, P: Clone> Clone for Derived<'p, T, P> {
     fn clone(&self) -> Self {
-        Self { parent: self.parent.clone(), inner: self.inner, }
+        Self {
+            parent: self.parent.clone(),
+            inner: self.inner,
+        }
     }
 }
 
@@ -173,12 +173,11 @@ impl<'f> Variant<'f> {
         let enum_name = &self.parent.ident;
         match self.fields().kind {
             FieldsKind::Named(..) => {
-                let field_name = self.fields.iter()
-                    .map(|f| f.ident.as_ref().unwrap());
+                let field_name = self.fields.iter().map(|f| f.ident.as_ref().unwrap());
                 quote! {
                     #enum_name::#variant { #(#field_name: #expression),* }
                 }
-            },
+            }
             FieldsKind::Unnamed(..) => {
                 quote!( #enum_name::#variant(#(#expression),*) )
             }
@@ -193,7 +192,9 @@ impl<'f> Variant<'f> {
 
 impl<'p> Enum<'p> {
     pub fn variants(self) -> impl Iterator<Item = Variant<'p>> + Clone {
-        self.inner.variants.iter()
+        self.inner
+            .variants
+            .iter()
             .map(move |v| Derived::from(v, self))
     }
 }
@@ -208,11 +209,10 @@ impl<'p> Struct<'p> {
         let struct_name = &self.parent.ident();
         match self.fields().kind {
             FieldsKind::Named(..) => {
-                let field_name = self.fields.iter()
-                    .map(|f| f.ident.as_ref().unwrap());
+                let field_name = self.fields.iter().map(|f| f.ident.as_ref().unwrap());
 
                 quote!(#struct_name { #(#field_name: #expression),* })
-            },
+            }
             FieldsKind::Unnamed(..) => {
                 quote!(#struct_name ( #(#expression),* ))
             }

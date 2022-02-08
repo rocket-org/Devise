@@ -1,14 +1,14 @@
 use std::ops::Deref;
 
 use proc_macro2::TokenStream;
-use syn::{self, Token, punctuated::Punctuated, spanned::Spanned, parse::Parser};
-use proc_macro2_diagnostics::{SpanDiagnosticExt, Diagnostic};
+use proc_macro2_diagnostics::{Diagnostic, SpanDiagnosticExt};
 use quote::ToTokens;
+use syn::{self, parse::Parser, punctuated::Punctuated, spanned::Spanned, Token};
 
+use crate::derived::{Input, ItemInput};
 use crate::ext::{GenericExt, GenericParamExt, GenericsExt};
-use crate::support::Support;
-use crate::derived::{ItemInput, Input};
 use crate::mapper::Mapper;
+use crate::support::Support;
 use crate::validator::Validator;
 
 pub type Result<T> = std::result::Result<T, Diagnostic>;
@@ -21,14 +21,14 @@ pub struct TraitItem {
 
 impl TraitItem {
     fn parse<T: ToTokens>(raw: T) -> Self {
-        let item: syn::ItemImpl = syn::parse2(quote!(#raw for Foo {}))
-            .expect("invalid impl token stream");
+        let item: syn::ItemImpl =
+            syn::parse2(quote!(#raw for Foo {})).expect("invalid impl token stream");
 
-        let path = item.trait_.clone()
-            .expect("impl does not have trait")
-            .1;
+        let path = item.trait_.clone().expect("impl does not have trait").1;
 
-        let name = path.segments.last()
+        let name = path
+            .segments
+            .last()
             .map(|s| s.ident.clone())
             .expect("trait to impl for is empty");
 
@@ -57,11 +57,12 @@ pub struct DeriveGenerator {
 
 impl DeriveGenerator {
     pub fn build_for<I, T>(input: I, trait_impl: T) -> DeriveGenerator
-        where I: Into<TokenStream>, T: ToTokens
+    where
+        I: Into<TokenStream>,
+        T: ToTokens,
     {
         let item = TraitItem::parse(trait_impl);
-        let input: syn::DeriveInput = syn::parse2(input.into())
-            .expect("invalid derive input");
+        let input: syn::DeriveInput = syn::parse2(input.into()).expect("invalid derive input");
 
         DeriveGenerator {
             item,
@@ -82,12 +83,11 @@ impl DeriveGenerator {
 
     pub fn type_bound<B: ToTokens>(&mut self, bound: B) -> &mut Self {
         let tokens = bound.to_token_stream();
-        self.type_bound_mapper(crate::MapperBuild::new()
-            .try_input_map(move |_, input| {
-                let tokens = tokens.clone();
-                let bounds = input.generics().parsed_bounded_types(tokens)?;
-                Ok(bounds.into_token_stream())
-            }))
+        self.type_bound_mapper(crate::MapperBuild::new().try_input_map(move |_, input| {
+            let tokens = tokens.clone();
+            let bounds = input.generics().parsed_bounded_types(tokens)?;
+            Ok(bounds.into_token_stream())
+        }))
     }
 
     /// Take the 0-indexed `trait_gen`th generic in the generics in impl<..>
@@ -181,12 +181,20 @@ impl DeriveGenerator {
         //   * type: GenFooAB<'x, 'y: 'x>
         //   * new type: GenFooAB<'_b, 'y: 'b>
         for (trait_i, type_i) in &self.generic_replacements {
-            let idents = self.item.generics.params.iter()
+            let idents = self
+                .item
+                .generics
+                .params
+                .iter()
                 .nth(*trait_i)
-                .and_then(|trait_gen| type_generics.params.iter()
-                    .filter(|gen| gen.kind() == trait_gen.kind())
-                    .nth(*type_i)
-                    .map(|type_gen| (trait_gen.ident(), type_gen.ident().clone())));
+                .and_then(|trait_gen| {
+                    type_generics
+                        .params
+                        .iter()
+                        .filter(|gen| gen.kind() == trait_gen.kind())
+                        .nth(*type_i)
+                        .map(|type_gen| (trait_gen.ident(), type_gen.ident().clone()))
+                });
 
             if let Some((with, ref to_replace)) = idents {
                 type_generics.replace(to_replace, with);
@@ -222,7 +230,9 @@ impl DeriveGenerator {
         // type that aren't in the trait's `impl<>` already.
         let mut type_generics_for_impl = self.item.generics.clone();
         for type_gen in &type_generics.params {
-            let type_gen_in_trait_gens = type_generics_for_impl.params.iter()
+            let type_gen_in_trait_gens = type_generics_for_impl
+                .params
+                .iter()
                 .map(|gen| gen.ident())
                 .find(|g| g == &type_gen.ident())
                 .is_some();
@@ -252,8 +262,8 @@ impl DeriveGenerator {
 
     pub fn debug(&mut self) -> &mut Self {
         match self._to_tokens() {
-            Ok(tokens) => println!("Tokens produced: {}", tokens.to_string()),
-            Err(e) => println!("Error produced: {:?}", e)
+            Ok(tokens) => println!("Tokens produced: {}", tokens),
+            Err(e) => println!("Error produced: {:?}", e),
         }
 
         self
@@ -279,7 +289,7 @@ impl DeriveGenerator {
                         Warning => format!("warning issued by `{}` derive", id),
                         Note => format!("note issued by `{}` derive", id),
                         Help => format!("help provided by `{}` derive", id),
-                        _ => format!("while deriving `{}`", id)
+                        _ => format!("while deriving `{}`", id),
                     };
 
                     diag.span_note(Span::call_site(), msg)

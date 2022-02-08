@@ -1,7 +1,7 @@
-use quote::ToTokens;
 use proc_macro2::TokenStream;
+use quote::ToTokens;
 
-use devise::{*, ext::SpanDiagnosticExt};
+use devise::{ext::SpanDiagnosticExt, *};
 
 pub struct ContentType(String, String);
 
@@ -10,8 +10,10 @@ pub struct Status(u16);
 impl FromMeta for Status {
     fn from_meta(meta: &MetaItem) -> Result<Self> {
         let num = usize::from_meta(meta)?;
-        if num < 100 || num >= 600 {
-            return Err(meta.value_span().error("status must be in range [100, 600)"));
+        if !(100..600).contains(&num) {
+            return Err(meta
+                .value_span()
+                .error("status must be in range [100, 600)"));
         }
 
         Ok(Status(num as u16))

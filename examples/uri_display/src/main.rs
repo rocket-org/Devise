@@ -1,4 +1,5 @@
-#[macro_use] extern crate uri_display;
+#[macro_use]
+extern crate uri_display;
 
 use std::fmt;
 
@@ -6,7 +7,7 @@ pub struct Formatter<'i, 'f: 'i> {
     prefixes: Vec<&'static str>,
     inner: &'i mut fmt::Formatter<'f>,
     previous: bool,
-    fresh: bool
+    fresh: bool,
 }
 
 impl<'i, 'f: 'i> Formatter<'i, 'f> {
@@ -34,7 +35,8 @@ impl<'i, 'f: 'i> Formatter<'i, 'f> {
     }
 
     fn with_prefix<F>(&mut self, prefix: &str, f: F) -> fmt::Result
-        where F: FnOnce(&mut Self) -> fmt::Result
+    where
+        F: FnOnce(&mut Self) -> fmt::Result,
     {
         self.fresh = true;
 
@@ -118,10 +120,7 @@ impl<'a> fmt::Display for &'a dyn UriDisplay {
 
 #[derive(UriDisplay)]
 pub enum Or {
-    A {
-        foo: &'static str,
-        bar: u8,
-    },
+    A { foo: &'static str, bar: u8 },
     B(u8),
 }
 
@@ -148,4 +147,4 @@ pub struct WrappedThing<T> {
 //     Some,
 // }
 
-pub fn main() { }
+pub fn main() {}
