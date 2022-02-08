@@ -1,13 +1,14 @@
-#![recursion_limit="256"]
+#![recursion_limit = "256"]
 
-#[macro_use] extern crate quote;
-extern crate proc_macro;
+#[macro_use]
+extern crate quote;
 extern crate devise_core;
+extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
-use devise_core::*;
 use devise_core::ext::SpanDiagnosticExt;
+use devise_core::*;
 
 #[derive(Default)]
 struct Naked(bool);

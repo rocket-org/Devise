@@ -1,8 +1,8 @@
 pub use proc_macro2_diagnostics::SpanDiagnosticExt;
 
-use syn::{*, spanned::Spanned, punctuated::Punctuated, token::Comma};
-use proc_macro2::{Span, TokenStream};
 use crate::Result;
+use proc_macro2::{Span, TokenStream};
+use syn::{punctuated::Punctuated, spanned::Spanned, token::Comma, *};
 
 type TypeParamBounds = Punctuated<TypeParamBound, Token![+]>;
 
@@ -36,7 +36,9 @@ pub trait GenericsExt {
 }
 
 pub trait AstItemExt {
-    fn respanned(&self, span: proc_macro2::Span) -> Self where Self: parse::Parse;
+    fn respanned(&self, span: proc_macro2::Span) -> Self
+    where
+        Self: parse::Parse;
     fn respanned_tokens(&self, span: proc_macro2::Span) -> TokenStream;
 }
 
@@ -53,7 +55,8 @@ pub use quote_respanned;
 
 impl<T: quote::ToTokens> AstItemExt for T {
     fn respanned(&self, span: Span) -> T
-        where Self: parse::Parse
+    where
+        Self: parse::Parse,
     {
         syn::parse2(self.respanned_tokens(span)).unwrap()
     }
@@ -61,7 +64,10 @@ impl<T: quote::ToTokens> AstItemExt for T {
     fn respanned_tokens(&self, span: Span) -> TokenStream {
         self.to_token_stream()
             .into_iter()
-            .map(|mut token| { token.set_span(span); token })
+            .map(|mut token| {
+                token.set_span(span);
+                token
+            })
             .collect()
     }
 }
@@ -80,8 +86,7 @@ impl GenericsExt for Generics {
     }
 
     fn replace_lifetime(&mut self, n: usize, with: &Lifetime) -> bool {
-        let lifetime_ident = self.lifetimes().nth(n)
-            .map(|l| l.lifetime.ident.clone());
+        let lifetime_ident = self.lifetimes().nth(n).map(|l| l.lifetime.ident.clone());
 
         if let Some(ref ident) = lifetime_ident {
             self.replace(ident, &with.ident);
@@ -95,11 +100,12 @@ impl GenericsExt for Generics {
     }
 
     fn parsed_bounded_types(&self, bounds: TokenStream) -> Result<WherePredicates> {
-        use syn::parse::Parser;
         use quote::ToTokens;
+        use syn::parse::Parser;
 
         let tokens = bounds.into_token_stream();
-        TypeParamBounds::parse_separated_nonempty.parse2(tokens)
+        TypeParamBounds::parse_separated_nonempty
+            .parse2(tokens)
             .map(|bounds| self.bounded_types(bounds))
             .map_err(|e| e.span().error(format!("invalid type param bounds: {}", e)))
     }
@@ -149,7 +155,13 @@ pub trait Split6<A, B, C, D, E, F>: Sized + Iterator {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
-pub enum GenericKind { Lifetime, Type, Binding, Const, Constraint }
+pub enum GenericKind {
+    Lifetime,
+    Type,
+    Binding,
+    Const,
+    Constraint,
+}
 
 impl PathExt for Path {
     fn is(&self, global: bool, segments: &[&str]) -> bool {
@@ -179,11 +191,9 @@ impl PathExt for Path {
     }
 
     fn generics(&self) -> Option<&Punctuated<GenericArgument, Comma>> {
-        self.segments.last().and_then(|last| {
-            match last.arguments {
-                PathArguments::AngleBracketed(ref args) => Some(&args.args),
-                _ => None
-            }
+        self.segments.last().and_then(|last| match last.arguments {
+            PathArguments::AngleBracketed(ref args) => Some(&args.args),
+            _ => None,
         })
     }
 }
@@ -227,13 +237,20 @@ impl<A, B, C, D, I: IntoIterator<Item = (A, B, C, D)> + Iterator> Split4<A, B, C
     }
 }
 
-impl<A, B, C, D, E, F, I: IntoIterator<Item = (A, B, C, D, E, F)> + Iterator> Split6<A, B, C, D, E, F> for I {
+impl<A, B, C, D, E, F, I: IntoIterator<Item = (A, B, C, D, E, F)> + Iterator>
+    Split6<A, B, C, D, E, F> for I
+{
     fn split6(self) -> (Vec<A>, Vec<B>, Vec<C>, Vec<D>, Vec<E>, Vec<F>) {
-        let (mut v1, mut v2, mut v3, mut v4, mut v5, mut v6)
-            = (vec![], vec![], vec![], vec![], vec![], vec![]);
+        let (mut v1, mut v2, mut v3, mut v4, mut v5, mut v6) =
+            (vec![], vec![], vec![], vec![], vec![], vec![]);
 
         self.into_iter().for_each(|(a, b, c, d, e, f)| {
-            v1.push(a); v2.push(b); v3.push(c); v4.push(d); v5.push(e); v6.push(f);
+            v1.push(a);
+            v2.push(b);
+            v3.push(c);
+            v4.push(d);
+            v5.push(e);
+            v6.push(f);
         });
 
         (v1, v2, v3, v4, v5, v6)
@@ -312,12 +329,16 @@ use syn::visit_mut::VisitMut;
 pub struct IdentReplacer<'a> {
     pub to_replace: &'a Ident,
     pub with: &'a Ident,
-    pub replaced: bool
+    pub replaced: bool,
 }
 
 impl<'a> IdentReplacer<'a> {
     pub fn new(to_replace: &'a Ident, with: &'a Ident) -> Self {
-        IdentReplacer { to_replace, with, replaced: false }
+        IdentReplacer {
+            to_replace,
+            with,
+            replaced: false,
+        }
     }
 }
 

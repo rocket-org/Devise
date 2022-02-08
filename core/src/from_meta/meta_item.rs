@@ -1,7 +1,12 @@
-use quote::{ToTokens, TokenStreamExt};
 use proc_macro2::{Span, TokenStream, TokenTree};
 use proc_macro2_diagnostics::{Diagnostic, SpanDiagnosticExt};
-use syn::{self, punctuated::Punctuated, spanned::Spanned, parse::{Parse, Parser}};
+use quote::{ToTokens, TokenStreamExt};
+use syn::{
+    self,
+    parse::{Parse, Parser},
+    punctuated::Punctuated,
+    spanned::Spanned,
+};
 
 use generator::Result;
 
@@ -17,8 +22,8 @@ pub enum MetaItem {
     List {
         path: syn::Path,
         paren: syn::token::Paren,
-        items: Punctuated<MetaItem, syn::token::Comma>
-    }
+        items: Punctuated<MetaItem, syn::token::Comma>,
+    },
 }
 
 fn parse_delimited_tokens(input: syn::parse::ParseStream) -> syn::Result<TokenStream> {
@@ -46,7 +51,7 @@ impl syn::parse::Parse for MetaItem {
                 MetaItem::List {
                     path,
                     paren: syn::parenthesized!(list in input),
-                    items: list.parse_terminated(Self::parse)?
+                    items: list.parse_terminated(Self::parse)?,
                 }
             } else if input.peek(syn::Token![=]) {
                 MetaItem::KeyValue {
@@ -73,7 +78,7 @@ impl MetaItem {
             Path(p) => Some(p),
             KeyValue { path, .. } => Some(path),
             List { path, .. } => Some(path),
-            _ => None
+            _ => None,
         }
     }
 
@@ -85,24 +90,27 @@ impl MetaItem {
     pub fn tokens(&self) -> Option<&TokenStream> {
         match self {
             MetaItem::Tokens(tokens) | MetaItem::KeyValue { tokens, .. } => Some(tokens),
-            _ => None
+            _ => None,
         }
     }
 
     pub fn parse_value<T: Parse>(&self, expected: &str) -> Result<T> {
         let tokens = self.tokens().ok_or_else(|| self.expected(expected))?;
-        syn::parse2(tokens.clone())
-            .map_err(|e| e.span().error(format!("failed to parse {}: {}", expected, e)))
+        syn::parse2(tokens.clone()).map_err(|e| {
+            e.span()
+                .error(format!("failed to parse {}: {}", expected, e))
+        })
     }
 
     pub fn parse_value_with<P: Parser>(&self, parser: P, expected: &str) -> Result<P::Output> {
         match self {
             MetaItem::Tokens(tokens) | MetaItem::KeyValue { tokens, .. } => {
                 parser.parse2(tokens.clone()).map_err(|e| {
-                    e.span().error(format!("failed to parse {}: {}", expected, e))
+                    e.span()
+                        .error(format!("failed to parse {}: {}", expected, e))
                 })
-            },
-            _ => Err(self.expected(expected))
+            }
+            _ => Err(self.expected(expected)),
         }
     }
 
@@ -119,7 +127,9 @@ impl MetaItem {
     }
 
     pub fn description(&self) -> &'static str {
-        let expr = self.tokens().and_then(|t| syn::parse2::<syn::Expr>(t.clone()).ok());
+        let expr = self
+            .tokens()
+            .and_then(|t| syn::parse2::<syn::Expr>(t.clone()).ok());
         if let Some(syn::Expr::Lit(e)) = expr {
             match e.lit {
                 syn::Lit::Str(..) => "string literal",
@@ -157,7 +167,7 @@ impl MetaItem {
     pub fn path(&self) -> Result<syn::Path> {
         match self {
             MetaItem::Path(p) => Ok(p.clone()),
-            _ => self.parse_value("path")
+            _ => self.parse_value("path"),
         }
     }
 
@@ -177,7 +187,10 @@ impl MetaItem {
         match self {
             MetaItem::List { items, .. } => Ok(items.iter()),
             _ => {
-                let n = self.name().map(|i| i.to_string()).unwrap_or_else(|| "attr".into());
+                let n = self
+                    .name()
+                    .map(|i| i.to_string())
+                    .unwrap_or_else(|| "attr".into());
                 Err(self.expected(&format!("list `#[{}(..)]`", n)))
             }
         }

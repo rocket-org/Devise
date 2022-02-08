@@ -1,9 +1,9 @@
 mod meta_item;
 
-use syn::parse::Parse;
-use syn::{self, Lit::*, spanned::Spanned};
-use proc_macro2_diagnostics::SpanDiagnosticExt;
 use proc_macro2::{Span, TokenStream};
+use proc_macro2_diagnostics::SpanDiagnosticExt;
+use syn::parse::Parse;
+use syn::{self, spanned::Spanned, Lit::*};
 
 use generator::Result;
 
@@ -27,17 +27,15 @@ pub trait FromMeta: Sized {
         Self::from_meta(&syn::parse2(tokens)?)
     }
 
-    fn from_attrs(
-        name: &str,
-        attrs: &[syn::Attribute]
-    ) -> Result<Vec<Self>> {
-        let tokens = name.parse()
+    fn from_attrs(name: &str, attrs: &[syn::Attribute]) -> Result<Vec<Self>> {
+        let tokens = name
+            .parse()
             .expect(&format!("`{}` contained invalid tokens", name));
 
-        let path = syn::parse(tokens)
-            .expect(&format!("`{}` was not a valid path", name));
+        let path = syn::parse(tokens).expect(&format!("`{}` was not a valid path", name));
 
-        let items = attrs.iter()
+        let items = attrs
+            .iter()
             .filter(|attr| attr.path == path)
             .map(|attr| Self::from_attr(attr))
             .collect::<Result<Vec<_>>>()?;
@@ -52,11 +50,11 @@ pub trait FromMeta: Sized {
     }
 
     fn one_from_attrs(name: &str, attrs: &[syn::Attribute]) -> Result<Option<Self>> {
-        let tokens = name.parse()
+        let tokens = name
+            .parse()
             .expect(&format!("`{}` contained invalid tokens", name));
 
-        let path = syn::parse(tokens)
-            .expect(&format!("`{}` was not a valid path", name));
+        let path = syn::parse(tokens).expect(&format!("`{}` was not a valid path", name));
 
         let mut raw_attrs = attrs.iter().filter(|attr| attr.path == path);
         if let Some(attr) = raw_attrs.nth(1) {
@@ -82,7 +80,9 @@ impl FromMeta for isize {
             return Err(meta.value_span().error("value is out of range for `isize`"));
         }
 
-        Err(meta.value_span().error("invalid value: expected integer literal"))
+        Err(meta
+            .value_span()
+            .error("invalid value: expected integer literal"))
     }
 }
 
@@ -96,7 +96,9 @@ impl FromMeta for usize {
             return Err(meta.value_span().error("value is out of range for `usize`"));
         }
 
-        Err(meta.value_span().error("invalid value: expected unsigned integer literal"))
+        Err(meta
+            .value_span()
+            .error("invalid value: expected unsigned integer literal"))
     }
 }
 
@@ -106,7 +108,9 @@ impl FromMeta for String {
             return Ok(s.value());
         }
 
-        Err(meta.value_span().error("invalid value: expected string literal"))
+        Err(meta
+            .value_span()
+            .error("invalid value: expected string literal"))
     }
 }
 
@@ -151,7 +155,12 @@ impl<T: FromMeta> FromMeta for SpanWrapped<T> {
         let span = meta.value_span();
         let key_span = meta.attr_path().map(|i| i.span());
         let full_span = meta.span();
-        T::from_meta(meta).map(|value| SpanWrapped { full_span, key_span, span, value })
+        T::from_meta(meta).map(|value| SpanWrapped {
+            full_span,
+            key_span,
+            span,
+            value,
+        })
     }
 }
 
@@ -187,8 +196,6 @@ use std::fmt;
 
 impl<T: fmt::Debug> fmt::Debug for SpanWrapped<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_tuple("SpanWrapped")
-            .field(&self.value)
-            .finish()
+        f.debug_tuple("SpanWrapped").field(&self.value).finish()
     }
 }

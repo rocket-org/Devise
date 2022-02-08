@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 
-use crate::{Result, Field, Fields, Variant, Struct, Enum, Input};
+use crate::{Enum, Field, Fields, Input, Result, Struct, Variant};
 
 // used by the macros.
 type FnOutput = TokenStream;
@@ -75,7 +75,7 @@ impl Mapper for MapperBuild {
                 self.input_mapper = Some(m);
                 result?
             }
-            None => input_default(&mut *self, value)?
+            None => input_default(&mut *self, value)?,
         };
 
         match self.output_mapper.take() {
@@ -84,7 +84,7 @@ impl Mapper for MapperBuild {
                 self.output_mapper = Some(m);
                 result
             }
-            _ => Ok(output)
+            _ => Ok(output),
         }
     }
 
@@ -99,7 +99,7 @@ pub fn input_default<M: Mapper>(mut mapper: M, value: Input<'_>) -> Result<Token
     match value {
         Input::Struct(v) => mapper.map_struct(v),
         Input::Enum(v) => mapper.map_enum(v),
-        Input::Union(_) => unimplemented!("union mapping is unimplemented")
+        Input::Union(_) => unimplemented!("union mapping is unimplemented"),
     }
 }
 
@@ -107,7 +107,8 @@ pub fn enum_default<M: Mapper>(mut mapper: M, value: Enum<'_>) -> Result<TokenSt
     let variant = value.variants().map(|v| &v.inner.ident);
     let fields = value.variants().map(|v| v.fields().match_tokens());
     let enum_name = ::std::iter::repeat(value.parent.ident());
-    let expression = value.variants()
+    let expression = value
+        .variants()
         .map(|v| mapper.map_variant(v))
         .collect::<Result<Vec<_>>>()?;
 
@@ -131,7 +132,8 @@ pub fn variant_default<M: Mapper>(mut mapper: M, value: Variant) -> Result<Token
 }
 
 pub fn fields_null<M: Mapper>(mut mapper: M, value: Fields) -> Result<TokenStream> {
-    let field = value.iter()
+    let field = value
+        .iter()
         .map(|field| mapper.map_field(field))
         .collect::<Result<Vec<_>>>()?;
 
@@ -139,7 +141,8 @@ pub fn fields_null<M: Mapper>(mut mapper: M, value: Fields) -> Result<TokenStrea
 }
 
 pub fn fields_default<M: Mapper>(mut mapper: M, value: Fields) -> Result<TokenStream> {
-    let field = value.iter()
+    let field = value
+        .iter()
         .map(|field| mapper.map_field(field))
         .collect::<Result<Vec<_>>>()?;
 
@@ -151,7 +154,8 @@ pub fn field_default<M: Mapper>(_: M, _: Field) -> Result<TokenStream> {
 }
 
 pub fn enum_null<M: Mapper>(mut mapper: M, value: Enum<'_>) -> Result<TokenStream> {
-    let expression = value.variants()
+    let expression = value
+        .variants()
         .map(|v| mapper.map_variant(v))
         .collect::<Result<Vec<_>>>()?;
 

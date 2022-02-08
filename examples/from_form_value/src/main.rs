@@ -1,4 +1,5 @@
-#[macro_use] extern crate from_form_value;
+#[macro_use]
+extern crate from_form_value;
 
 // Mock what the derive uses from `rocket`.
 pub mod rocket {
@@ -6,7 +7,9 @@ pub mod rocket {
         pub struct RawStr;
 
         impl RawStr {
-            pub fn as_uncased_str(&self) -> &str { unimplemented!() }
+            pub fn as_uncased_str(&self) -> &str {
+                unimplemented!()
+            }
         }
     }
 
@@ -14,9 +17,7 @@ pub mod rocket {
         pub trait FromFormValue<'a>: Sized {
             type Error;
 
-            fn from_form_value(
-                value: &'a ::rocket::http::RawStr
-            ) -> Result<Self, Self::Error>;
+            fn from_form_value(value: &'a ::rocket::http::RawStr) -> Result<Self, Self::Error>;
         }
     }
 }
@@ -25,7 +26,7 @@ pub mod rocket {
 enum Foo {
     OptionA,
     ThenB,
-    Other
+    Other,
 }
 
 // #[derive(FromFormValue)]
@@ -38,4 +39,4 @@ enum Foo {
 //     OptionA(usize),
 // }
 
-pub fn main() { }
+pub fn main() {}

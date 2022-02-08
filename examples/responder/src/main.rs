@@ -1,4 +1,5 @@
-#[macro_use] extern crate responder;
+#[macro_use]
+extern crate responder;
 
 pub mod rocket {
     pub struct Request<'r>(&'r str);
@@ -71,4 +72,4 @@ pub enum Baz {
     Second(Vec<u8>),
 }
 
-pub fn main() { }
+pub fn main() {}

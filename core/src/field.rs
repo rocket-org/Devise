@@ -1,10 +1,10 @@
 use std::ops::Deref;
 
-use quote::ToTokens;
 use proc_macro2::TokenStream;
-use syn::{self, Member, Index, punctuated::Punctuated, spanned::Spanned};
+use quote::ToTokens;
+use syn::{self, punctuated::Punctuated, spanned::Spanned, Index, Member};
 
-use crate::derived::{Derived, Struct, Variant, Union};
+use crate::derived::{Derived, Struct, Union, Variant};
 use crate::ItemInput;
 
 #[derive(Debug, Copy, Clone)]
@@ -45,7 +45,7 @@ impl ToTokens for FieldParent<'_> {
 pub(crate) enum FieldsKind<'p> {
     Named(&'p syn::FieldsNamed),
     Unnamed(&'p syn::FieldsUnnamed),
-    Unit
+    Unit,
 }
 
 impl<'a> From<&'a syn::Fields> for FieldsKind<'a> {
@@ -66,19 +66,28 @@ pub struct Fields<'p> {
 
 impl<'p> From<Variant<'p>> for Fields<'p> {
     fn from(v: Variant<'p>) -> Self {
-        Fields { parent: FieldParent::Variant(v), kind: (&v.inner.fields).into() }
+        Fields {
+            parent: FieldParent::Variant(v),
+            kind: (&v.inner.fields).into(),
+        }
     }
 }
 
 impl<'p> From<Struct<'p>> for Fields<'p> {
     fn from(v: Struct<'p>) -> Self {
-        Fields { parent: FieldParent::Struct(v), kind: (&v.inner.fields).into() }
+        Fields {
+            parent: FieldParent::Struct(v),
+            kind: (&v.inner.fields).into(),
+        }
     }
 }
 
 impl<'p> From<Union<'p>> for Fields<'p> {
     fn from(v: Union<'p>) -> Self {
-        Fields { parent: FieldParent::Union(v), kind: FieldsKind::Named(&v.inner.fields) }
+        Fields {
+            parent: FieldParent::Union(v),
+            kind: FieldsKind::Named(&v.inner.fields),
+        }
     }
 }
 
@@ -87,7 +96,7 @@ impl<'f> Fields<'f> {
         match self.kind {
             FieldsKind::Named(i) => Some(&i.named),
             FieldsKind::Unnamed(i) => Some(&i.unnamed),
-            FieldsKind::Unit => None
+            FieldsKind::Unit => None,
         }
     }
 
@@ -113,21 +122,21 @@ impl<'f> Fields<'f> {
     pub fn are_named(self) -> bool {
         match self.kind {
             FieldsKind::Named(..) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn are_unnamed(self) -> bool {
         match self.kind {
             FieldsKind::Unnamed(..) => true,
-            _ => false
+            _ => false,
         }
     }
 
     pub fn are_unit(self) -> bool {
         match self.kind {
             FieldsKind::Unit => true,
-            _ => false
+            _ => false,
         }
     }
 
@@ -135,7 +144,7 @@ impl<'f> Fields<'f> {
         match self.kind {
             FieldsKind::Named(..) => quote_spanned!(self.span() => { #tokens }),
             FieldsKind::Unnamed(..) => quote_spanned!(self.span() => ( #tokens )),
-            FieldsKind::Unit => quote!()
+            FieldsKind::Unit => quote!(),
         }
     }
 
@@ -145,9 +154,8 @@ impl<'f> Fields<'f> {
             let match_ident = field.match_ident();
             match field.ident {
                 Some(ref id) => quote!(#id: #match_ident),
-                None => quote!(#match_ident)
+                None => quote!(#match_ident),
             }
-
         });
 
         self.surround(quote!(#(#idents),*))
@@ -157,7 +165,7 @@ impl<'f> Fields<'f> {
         match self.parent {
             FieldParent::Struct(s) => s.builder(f),
             FieldParent::Variant(v) => v.builder(f),
-            FieldParent::Union(_) => panic!("unions are not supported")
+            FieldParent::Union(_) => panic!("unions are not supported"),
         }
     }
 }
@@ -167,7 +175,7 @@ impl<'a> ToTokens for Fields<'a> {
         match self.kind {
             FieldsKind::Named(v) => v.to_tokens(tokens),
             FieldsKind::Unnamed(v) => v.to_tokens(tokens),
-            FieldsKind::Unit => tokens.extend(quote_spanned!(self.parent.span() => ()))
+            FieldsKind::Unit => tokens.extend(quote_spanned!(self.parent.span() => ())),
         }
     }
 }
@@ -182,7 +190,7 @@ impl<'f> Field<'f> {
     pub fn match_ident(self) -> syn::Ident {
         let name = match self.ident {
             Some(ref id) => format!("__{}", id),
-            None => format!("__{}", self.index)
+            None => format!("__{}", self.index),
         };
 
         syn::Ident::new(&name, self.span().into())
@@ -196,7 +204,10 @@ impl<'f> Field<'f> {
             let span = self.field.span().into();
             let member = match self.ident {
                 Some(ref ident) => Member::Named(ident.clone()),
-                None => Member::Unnamed(Index { index: self.index as u32, span })
+                None => Member::Unnamed(Index {
+                    index: self.index as u32,
+                    span,
+                }),
             };
 
             quote_spanned!(span => self.#member)
