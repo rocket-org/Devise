@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 #![recursion_limit="256"]
 
 #[macro_use] pub extern crate quote;

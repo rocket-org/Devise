@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 extern crate devise_core;
 
 // Magic incantantion to reexport proc-macros from codegen crate.
