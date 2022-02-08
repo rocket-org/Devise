@@ -4,7 +4,7 @@ use syn::{self, DeriveInput};
 use quote::ToTokens;
 
 use proc_macro2::TokenStream;
-use field::{Field, Fields, FieldsKind};
+use crate::field::{Field, Fields, FieldsKind};
 
 #[derive(Debug, Clone)]
 pub enum ItemInput {

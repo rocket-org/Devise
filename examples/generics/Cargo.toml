@@ -1,6 +1,8 @@
 [package]
 name = "generics"
 version = "0.3.1"
+edition = "2021"
+rust-version = "1.56.0"
 authors = ["Sergio Benitez <sb@sergio.bz>"]
 publish = false
 
@@ -13,5 +15,5 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-quote = "1.0"
+quote = "1.0.15"
 devise = { path = "../../lib" }

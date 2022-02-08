@@ -15,7 +15,7 @@ pub mod rocket {
             type Error;
 
             fn from_form_value(
-                value: &'a ::rocket::http::RawStr
+                value: &'a crate::rocket::http::RawStr
             ) -> Result<Self, Self::Error>;
         }
     }

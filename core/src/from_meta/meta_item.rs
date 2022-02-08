@@ -3,7 +3,7 @@ use proc_macro2::{Span, TokenStream, TokenTree};
 use proc_macro2_diagnostics::{Diagnostic, SpanDiagnosticExt};
 use syn::{self, punctuated::Punctuated, spanned::Spanned, parse::{Parse, Parser}};
 
-use generator::Result;
+use crate::generator::Result;
 
 #[derive(Debug, Clone)]
 pub enum MetaItem {
@@ -67,7 +67,7 @@ impl syn::parse::Parse for MetaItem {
 
 impl MetaItem {
     pub fn attr_path(&self) -> Option<&syn::Path> {
-        use MetaItem::*;
+        use crate::MetaItem::*;
 
         match self {
             Path(p) => Some(p),

@@ -18,12 +18,12 @@ mod from_meta;
 
 pub mod ext;
 
-pub use field::*;
-pub use support::Support;
-pub use generator::*;
-pub use from_meta::*;
-pub use derived::*;
+pub use crate::field::*;
+pub use crate::support::Support;
+pub use crate::generator::*;
+pub use crate::from_meta::*;
+pub use crate::derived::*;
 pub use proc_macro2_diagnostics::{Diagnostic, Level};
 pub use syn::spanned::Spanned;
-pub use mapper::{Mapper, MapperBuild};
-pub use validator::{Validator, ValidatorBuild};
+pub use crate::mapper::{Mapper, MapperBuild};
+pub use crate::validator::{Validator, ValidatorBuild};

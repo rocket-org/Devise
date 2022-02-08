@@ -7,10 +7,10 @@ extern crate proc_macro;
 mod http_attrs;
 
 use quote::ToTokens;
-use proc_macro2::TokenStream;
+use crate::proc_macro2::TokenStream;
 use devise::{*, ext::{TypeExt, SpanDiagnosticExt}};
 
-use http_attrs::{ContentType, Status};
+use crate::http_attrs::{ContentType, Status};
 
 #[derive(Default, FromMeta)]
 struct ItemAttr {

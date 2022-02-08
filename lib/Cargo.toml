@@ -1,6 +1,8 @@
 [package]
 name = "devise"
 version = "0.3.1"
+edition = "2021"
+rust-version = "1.56.0"
 authors = ["Sergio Benitez <sb@sergio.bz>"]
 description = "A library for devising derives and other procedural macros."
 license = "MIT/Apache-2.0"

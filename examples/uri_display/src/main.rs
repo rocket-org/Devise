@@ -93,7 +93,7 @@ impl<'a> UriDisplay for &'a str {
 
 impl UriDisplay for u8 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        use fmt::Write;
+        use crate::fmt::Write;
         write!(f, "{}", self)
     }
 }

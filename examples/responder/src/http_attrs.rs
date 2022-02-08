@@ -1,5 +1,5 @@
 use quote::ToTokens;
-use proc_macro2::TokenStream;
+use crate::proc_macro2::TokenStream;
 
 use devise::{*, ext::SpanDiagnosticExt};
 
